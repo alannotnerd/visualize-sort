@@ -1,0 +1,17 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "pts": "^0.7.0",
+    "typescript": "^3.3.3"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.3",
+    "tsify": "^4.0.1"
+  },
+  "scripts": {
+    "build": "browserify src/index.ts -p [ tsify --noImplicitAny ] -o build/bundle.js; cp src/template/index.html build/index.html"
+  }
+}
