@@ -5,7 +5,7 @@ export class ArrViewer{
   private space: CanvasSpace;
   private form: CanvasForm;
   private arr: Arr;
-  private count = 0;
+
   private _arr: Array<number>;
   private eventArray: Array<ArrEventDetail> = new Array();
   private _lastAccess = -1;
@@ -29,7 +29,6 @@ export class ArrViewer{
     //add event listener to `arr-access` event.
     addEventListener("arr-access", (e:CustomEvent<ArrEventDetail>)=>{
       this.eventArray.push(e.detail);
-      this.count ++;
     });
   }
 
@@ -55,7 +54,7 @@ export class ArrViewer{
     this.arr.begin();
     const w = 1600 / this.arr.size;
     this.space.add((time, ftime)=>{
-      if(time - this.last_time > delay && this.frame_count <= this.count){
+      if(time - this.last_time > delay && this.frame_count <= this.eventArray.length){
         this.last_time = time;
         this.process(this.eventArray[this.frame_count]);
         this.frame_count ++;
