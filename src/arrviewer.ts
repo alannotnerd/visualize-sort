@@ -1,15 +1,8 @@
 import { CanvasSpace, Pt, Group, CanvasForm, Space } from "pts";
 import { Arr, BasicArr, ArrEventDetail, QuickSorter } from "./arr";
-export class ArrSpace extends CanvasSpace{
-  private _anmid = -1;
-  play(time=0):this{
-    requestAnimationFrame(this.play.bind(this));
-    this.playItems(time);
-    return this;
-  }
-}
+
 export class ArrViewer{
-  private space: ArrSpace;
+  private space: CanvasSpace;
   private form: CanvasForm;
   private arr: Arr;
   private count = 0;
@@ -18,19 +11,29 @@ export class ArrViewer{
   private _lastAccess = -1;
   private frame_count = 0;
   private last_time = 0;
+
+  /**
+   * 
+   * @param id `<div>` element's id
+   * @param arr `Arr` instance
+   */
   constructor(id: String, arr: Arr = new BasicArr()){
-    this.space = new ArrSpace("#"+id);
+    this.space = new CanvasSpace("#"+id);
     this.space.setup({resize: true, retina: true, bgcolor: "#000"});
     this.form = this.space.getForm();
     this.arr = arr;
-    let sort = new QuickSorter();
-    this.arr.sorter = sort;
+    
+    //get a copy of the init arr.
     this._arr = this.arr.arr.slice();
+
+    //add event listener to `arr-access` event.
     addEventListener("arr-access", (e:CustomEvent<ArrEventDetail>)=>{
       this.eventArray.push(e.detail);
       this.count ++;
     });
   }
+
+  //process events in eventArr
   process(e: ArrEventDetail){
     switch (e.type) {
       case 0:
@@ -43,6 +46,11 @@ export class ArrViewer{
         break;
     }
   }
+
+  /**
+   * 
+   * @param delay Time duration between each frame.
+   */
   show(delay=1) {
     this.arr.begin();
     const w = 1600 / this.arr.size;

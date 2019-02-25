@@ -3,6 +3,9 @@ export interface ArrEventDetail{
   value?: number,
   index: number
 }
+interface Sorter{
+  sort(arr: Arr): void;
+}
 export abstract class Arr {
   public arr: Array<number>;
   public sorter: Sorter;
@@ -10,22 +13,29 @@ export abstract class Arr {
     return this.arr.length;
   }
   
-  constructor() {
+  constructor(sorter: Sorter) {
+    this.sorter = sorter
     this.init();
   }
+  /**
+   * Custom `arr` initialize method.
+   */
   abstract init(): void;
 
   get(i: number): number{
-    this.report(5, {type: 0, index: i});
+    this.report({type: 0, index: i});
     return this.arr[i];
   }
 
   set(i: number, value: number): void{
-    this.report(50, {type: 1, index: i, value: value});
+    this.report({type: 1, index: i, value: value});
     this.arr[i] = value;
   }
-
-  report(delay: number = 5, detail: ArrEventDetail): void{
+  /**
+   *  Emit arr-access Event, wher `get` or `set`.
+   * @param detail Event Detail
+   */
+  report(detail: ArrEventDetail): void{
     const event = new CustomEvent("arr-access", {detail: detail});
     window.dispatchEvent(event);
   }
@@ -33,15 +43,14 @@ export abstract class Arr {
   abstract begin():void;
 }
 
-interface Sorter{
-  sort(arr: Arr): void;
-}
-
-export class BasicArr extends Arr implements Sorter{
-  constructor(){
-    super();
-    this.sorter = this;
+export class BasicArr extends Arr {
+  constructor(sorter = new BubbleSorter()){
+    super(sorter);
   }
+
+  /**
+   * Typically initialize, for `Sorter` which don't care the type of data.
+   */
   init(): void{
     this.arr = new Array<number>(450);
     for (let i = 0; i < this.arr.length; i++) {
@@ -52,9 +61,18 @@ export class BasicArr extends Arr implements Sorter{
       [this.arr[i], this.arr[random]] = [this.arr[random], this.arr[i]];
     }
   }
+
+  /**
+   * Begin sorting.
+   * You could set a custom `Sorter` before calling it.
+   */
   begin(): void{
     if(this.sorter) this.sorter.sort(this);
   }
+  
+}
+
+export class BubbleSorter implements Sorter{
   sort(arr: Arr): void{
     const size = arr.size;
     for(let i=1; i< size; i++){
