@@ -1,5 +1,5 @@
 import { CanvasSpace, Pt, Group, CanvasForm, Space } from "pts";
-import { Arr, BasicArr, ArrEventDetail, QuickSorter } from "./arr";
+import { Arr, BasicArr, ArrEventDetail } from "./arr";
 
 export class ArrViewer{
   private space: CanvasSpace;
