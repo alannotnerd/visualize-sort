@@ -1,29 +1,64 @@
 import { CanvasSpace, Pt, Group, CanvasForm, Space } from "pts";
-import { Arr, BasicArr } from "./arr";
+import { Arr, BasicArr, ArrEventDetail, QuickSorter } from "./arr";
+export class ArrSpace extends CanvasSpace{
+  private _anmid = -1;
+  play(time=0):this{
+    requestAnimationFrame(this.play.bind(this));
+    this.playItems(time);
+    return this;
+  }
+}
 export class ArrViewer{
-  private space: CanvasSpace;
+  private space: ArrSpace;
   private form: CanvasForm;
   private arr: Arr;
+  private count = 0;
+  private _arr: Array<number>;
+  private eventArray: Array<ArrEventDetail> = new Array();
+  private _lastAccess = -1;
+  private frame_count = 0;
+  private last_time = 0;
   constructor(id: String, arr: Arr = new BasicArr()){
-    this.space = new CanvasSpace("#"+id);
+    this.space = new ArrSpace("#"+id);
     this.space.setup({resize: true, retina: true, bgcolor: "#000"});
     this.form = this.space.getForm();
     this.arr = arr;
+    let sort = new QuickSorter();
+    this.arr.sorter = sort;
+    this._arr = this.arr.arr.slice();
+    addEventListener("arr-access", (e:CustomEvent<ArrEventDetail>)=>{
+      this.eventArray.push(e.detail);
+      this.count ++;
+    });
   }
-  show() {
-    const w = 1600 / this.arr.size;
-    for(let i = 0; i<this.arr.size; i++){
-      console.log(this.arr.get(i));
-      this.space.add((time, ftime)=>{
-        this.form.fill("#f88").text([10, 50], `time: ${time.toFixed(2)}, ftime: ${ftime.toFixed(2)}`);
-      })
-      //rects
-      this.space.add((time, ftime)=>{
-        const tl = new Pt(w*i, 900);
-        const br = new Pt(w*i+w, 900-this.arr.get(i));
-        this.form.fill("#888").rect([tl, br]);
-      })
+  process(e: ArrEventDetail){
+    switch (e.type) {
+      case 0:
+        this._lastAccess = e.index;
+        break;
+      case 1:
+        this._arr[e.index] = e.value;
+        break;
+      default:
+        break;
     }
-    this.space.play(50);
+  }
+  show(delay=1) {
+    this.arr.begin();
+    const w = 1600 / this.arr.size;
+    this.space.add((time, ftime)=>{
+      if(time - this.last_time > delay && this.frame_count <= this.count){
+        this.last_time = time;
+        this.process(this.eventArray[this.frame_count]);
+        this.frame_count ++;
+      }
+      this.form.fill("#f88").text([10, 50], `count: ${this.frame_count}, arr: ${this.eventArray.length}`);
+      for(let i = 0; i< this.arr.size; i++){
+        const tl = new Pt(w*i, 900);
+        const br = new Pt(w*i+w, (450-this._arr[i]) * 2);
+        this.form.fill(i == this._lastAccess?"#822":"#888").rect([tl, br]);
+      }
+    });
+    this.space.play();
   }
 }

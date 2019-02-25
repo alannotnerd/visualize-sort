@@ -7,7 +7,7 @@
     "noImplicitAny": false,
     "noEmitOnError": true,
     "removeComments": true,
-    "sourceMap": false,
+    "sourceMap": true,
     "target": "es6",
     "outDir": "../content/app/"
   },
