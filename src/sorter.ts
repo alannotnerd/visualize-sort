@@ -38,49 +38,27 @@ export class BinaryInsertSorter implements Sorter{
     for(let i=1; i<arr.size; i++){
       const target = arr.get(i);
       const index = this.binarySearch(arr, i, target);
-      for(let j=i; j>index; j--){
-        arr.set(j, arr.get(j-1));
-      }
-      arr.set(index, target);
+      arr.insertswap(index, i);
     }
   }
 }
 
 export class SelectionSorter implements Sorter{
   sort(arr: Arr): void{
-    let head = 0, tail = arr.size - 1;
-    while(tail - head > 0){
-      let [mini, maxi, min, max] = this._search(arr, head, tail);
-      if(mini != head) {
-        arr.set(mini, arr.get(head));
-        arr.set(head, min);
+    let head = 0;
+    const size = arr.size;
+    while(head<size){
+      let min = head, minv = arr.get(head);
+      for(let i = head+1; i<size; i++){
+        const temp = arr.get(i);
+        if(temp < minv) [min, minv] = [i, temp];
       }
-      if(maxi != tail){
-        arr.set(maxi, arr.get(tail));
-        arr.set(tail, max);
+      if(min !== head){
+        arr.set(min, arr.get(head));
+        arr.set(head, minv);
       }
-      head++; tail--;
+      head ++;
     }
-  }
-
-  _search(arr: Arr, head: number, tail: number): [number, number, number, number]{
-    let min, mini, max, maxi;
-    min = arr.get(head);
-    max = arr.get(tail);
-    mini = head;
-    maxi = tail;
-    for(let i=head+1; i<tail; i++){
-      const temp = arr.get(i);
-      if(temp < min){
-        min = temp;
-        mini = i;
-      }
-      if(temp > max){
-        max = temp;
-        maxi = i;
-      }
-    }
-    return [mini,maxi, min, max];
   }
 }
 export class BubbleSorter implements Sorter{
@@ -162,7 +140,11 @@ export class InsertMergeSorter implements Sorter{
   _merge(arr:Arr, left: number, mid: number, right: number){
     let lh = left;
     for(let i=mid; i<right; i++){
-      lh = this._insert(arr,lh, i);
+      const temp = this._insert(arr,lh, i);
+      if(temp === i){
+        console.log("hello world");
+        break;
+      } else lh = temp;
     }
   }
 
@@ -171,59 +153,67 @@ export class InsertMergeSorter implements Sorter{
     let i = tail - 1;
     for(i;i>=head;i--){
       const temp = arr.get(i);
-      if(temp >= target) arr.set(i+1, temp);
-      else{
-        break;
-      }
+      if(temp < target) break;
     }
-    if(i+1 !== tail) arr.set(i+1,target);
-    return i+1;
+    i ++;
+    if(i !== tail) arr.insertswap(i, tail);
+    return i;
   }
 }
 
 export class HeapSorter implements Sorter{
   sort(arr: Arr): void{
     let size = arr.size;
-    let max = this._heapify(arr, 0, size);
+    this._heapify(arr, 0, size);
     do {
+      let max = arr.get(0);
       size --;
-      arr.set(0, arr.get(size));
+      let top = arr.get(size);
+      arr.set(0, top);
       arr.set(size, max);
-      this._sink(arr, 0, size);
-      max = arr.get(0);
+      this._sink(arr, 0, size, top);
     } while (size>0);
   }
 
-  _heapify(arr: Arr, root: number, size: number): number{
-    const left = this._left(root), right = this._right(root);
-    let lv, rv, rootv = arr.get(root);
-    if(left < size) lv=this._heapify(arr, left, size);
-    if(right < size) rv=this._heapify(arr, right, size);
-    let [maxi, maxv] = (lv>rv)?[left, lv]: [right,rv];
-    if(rootv < maxv){
-      arr.set(root, maxv);
-      arr.set(maxi, rootv);
-    }else maxv = rootv;
-    return maxv || -1;
+  _heapify(arr: Arr, root: number, size: number): void{
+    for(let i = Math.floor(size/2); i>=0; i--) this._sink(arr, i, size, arr.get(i));
   }
 
-  _sink(arr: Arr, root: number, size: number): void{
-    const target = arr.get(root);
-    let lv, rv, left_index, right_index;
-    do{
-      left_index = this._left(root);
-      right_index = this._right(root);
-      lv = (left_index<size)?arr.get(left_index): -1;
-      rv = (right_index<size)?arr.get(right_index): -1;
-      let max_index = (lv<rv)?right_index:left_index;
-      let max_value = (lv<rv)?rv:lv;
-      arr.set(root, max_value);
-      root = max_index;
-    }while(target < lv || target < rv);
-    arr.set(root, target);
+  _sink(arr: Arr, node: number, size: number, root: number): void{
+    let left = (node + 1) * 2 - 1;
+    let right = left + 1;
+    if(left<size) var lv = arr.get(left);
+    else return;
+    if(right<size) var rv = arr.get(right);
+    else{
+      if(lv > root){
+        arr.set(node, lv);
+        arr.set(left, root);
+        return this._sink(arr, left, size, root);
+      }
+      return;
+    }
+
+    let [maxv, maxi] = (lv>rv)?[lv, left]: [rv, right];
+    if(maxv > root){
+      arr.set(node, maxv);
+      arr.set(maxi, root)
+      return this._sink(arr, maxi, size, root);
+    }
+    return;
   }
+}
 
-  _left = (root: number):number => (root+1) * 2 -1;
-
-  _right = (root: number): number => (root+1) * 2;
+export class SleepSorter implements Sorter{
+  sort(arr: Arr){
+    const size = arr.size;
+    var count = 0;
+    for(let i =0; i< size; i++){
+      let time = arr.get(i);
+      setTimeout(()=>{
+        arr.set(count, time);
+        count ++;
+      }, time);
+    }
+  }
 }

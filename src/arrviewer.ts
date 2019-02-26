@@ -18,6 +18,7 @@ export class ArrViewer{
   private clean = false;
   private frame_count = 0;
   private last_time = 0;
+  private _lastMoveRange?: Array<number> = null;
 
   private mb = new MusicBox();
 
@@ -43,26 +44,42 @@ export class ArrViewer{
 
   //process events in eventArr
   process(e: ArrEventDetail){
+    if(!e) return;
     switch (e.type) {
       case 0:
         this._lastAccess = e.index;
         this.clean = e.value === 1;
+        this.mb.createSound(this._arr[e.index] * 0.8 + 587);
         break;
       case 1:
         this._lastSet = e.index;
         this._arr[e.index] = e.value;
+        this.mb.createSound(this._arr[e.index] * 0.8 + 587);
+        break;
+      case 2:
+        let temp = this._arr[e.value];
+        for(let i=e.value; i>e.index; i--){
+          this._arr[i] = this._arr[i-1];
+        }
+        this._lastSet = e.index;
+        this._lastMoveRange = [e.index, e.value];
+        this._arr[e.index] = temp;
+        this.frame_count += (e.value - e.index);
+        for(let i = e.index; i<= e.value; i++){
+          this.mb.createSound(this._arr[i] * 0.8 + 587);
+        }
         break;
       default:
         break;
     }
-    this.mb.createSound(this._arr[e.index] * 0.8 + 587);
+
   }
 
   /**
    *
    * @param delay Time duration between each frame.
    */
-  show(delay=1) {
+  show(delay=1, frame_gap=1) {
     this.arr.begin();
     const w = 1600 / this.arr.size;
     this.space.add((time, ftime)=>{
@@ -70,8 +87,10 @@ export class ArrViewer{
       if(time - this.last_time > delay && this.eventArray.length > 0){
         frame_diff = time - this.last_time;
         this.last_time = time;
-        this.process(this.eventArray.shift());
-        if(!this.clean) this.frame_count ++;
+        for(let i = 0; i < frame_gap; i++){
+          this.process(this.eventArray.shift());
+          if(!this.clean) this.frame_count ++;
+        }
       }
       this.form.fill("#f88").text([10, 50], this.info({frame_count: this.frame_count, frame_diff: frame_diff}));
 
@@ -80,6 +99,7 @@ export class ArrViewer{
         const br = new Pt(w*i+w, (450-this._arr[i]) * 2);
         this.form.fill(this.colorOf(i)).rect([tl, br]);
       }
+      if(this._lastMoveRange) this._lastMoveRange = null;
     });
     this.space.play();
   }
@@ -97,6 +117,8 @@ export class ArrViewer{
   colorOf(i: number): string{
     if(this.clean){
       return i<=this._lastAccess? "#282": "#888";
+    } else if(this._lastMoveRange && i > this._lastMoveRange[0] && i<= this._lastMoveRange[1]){
+      return "#683";
     }else{
       return i == this._lastAccess?"#822":(this._lastSet==i)?"#248":"#888";
     }

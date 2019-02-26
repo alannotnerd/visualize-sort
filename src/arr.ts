@@ -34,6 +34,15 @@ export abstract class Arr {
     this.report({type: 1, index: i, value: value});
     this.arr[i] = value;
   }
+
+  insertswap(i: number, value: number): void{
+    this.report({type: 2, index: i, value: value});
+    let temp = this.arr[value];
+    for(let j=value; j>i; j--){
+      this.arr[j] = this.arr[j-1];
+    }
+    this.arr[i] = temp;
+  }
   /**
    *  Emit arr-access Event, wher `get` or `set`.
    * @param detail Event Detail
@@ -108,6 +117,15 @@ export class JumpOrderArr extends BasicArr{
     for(let i =0; i< this.arr.length; i++){
       if(i % 2 === 0) this.arr[i] = i*2 +2;
       else this.arr[i] = i*2 - 2;
+    }
+  }
+}
+
+export class ReverseOrderArr extends BasicArr{
+  init(): void{
+    this.arr = new Array<number>(225);
+    for(let i=0;i<this.arr.length; i++){
+      this.arr[i] = 450 - 2 * i;;
     }
   }
 }
