@@ -101,3 +101,13 @@ export class LocalOrderArr extends BasicArr{
     }
   }
 }
+
+export class JumpOrderArr extends BasicArr{
+  init(): void{
+    this.arr = new Array<number>(225);
+    for(let i =0; i< this.arr.length; i++){
+      if(i % 2 === 0) this.arr[i] = i*2 +2;
+      else this.arr[i] = i*2 - 2;
+    }
+  }
+}

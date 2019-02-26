@@ -113,7 +113,7 @@ export class ShellSorter implements Sorter{
         for(j; j >= 0 && arr.get(j) > temp; j -= gap){
           arr.set(j+gap, arr.get(j));
         }
-        arr.set(j+gap, temp);
+        if(j !== i-gap)arr.set(j+gap, temp);
       }
     }
   }
@@ -144,4 +144,86 @@ export class QuickSorter implements Sorter{
     arr.set(begin, holder);
     return begin;
   }
+}
+
+export class InsertMergeSorter implements Sorter{
+  sort(arr: Arr): void{
+    this._sort(arr, 0, arr.size);
+  }
+
+  _sort(arr: Arr, head:number, tail:number): void{
+    if(tail-head<2) return;
+    let mid = head + Math.floor((tail - head) / 2);
+    this._sort(arr, head, mid);
+    this._sort(arr, mid, tail);
+    this._merge(arr, head, mid, tail);
+  }
+
+  _merge(arr:Arr, left: number, mid: number, right: number){
+    let lh = left;
+    for(let i=mid; i<right; i++){
+      lh = this._insert(arr,lh, i);
+    }
+  }
+
+  _insert(arr: Arr, head: number, tail:number): number{
+    const target = arr.get(tail);
+    let i = tail - 1;
+    for(i;i>=head;i--){
+      const temp = arr.get(i);
+      if(temp >= target) arr.set(i+1, temp);
+      else{
+        break;
+      }
+    }
+    if(i+1 !== tail) arr.set(i+1,target);
+    return i+1;
+  }
+}
+
+export class HeapSorter implements Sorter{
+  sort(arr: Arr): void{
+    let size = arr.size;
+    let max = this._heapify(arr, 0, size);
+    do {
+      size --;
+      arr.set(0, arr.get(size));
+      arr.set(size, max);
+      this._sink(arr, 0, size);
+      max = arr.get(0);
+    } while (size>0);
+  }
+
+  _heapify(arr: Arr, root: number, size: number): number{
+    const left = this._left(root), right = this._right(root);
+    let lv, rv, rootv = arr.get(root);
+    if(left < size) lv=this._heapify(arr, left, size);
+    if(right < size) rv=this._heapify(arr, right, size);
+    let [maxi, maxv] = (lv>rv)?[left, lv]: [right,rv];
+    if(rootv < maxv){
+      arr.set(root, maxv);
+      arr.set(maxi, rootv);
+    }else maxv = rootv;
+    return maxv || -1;
+  }
+
+  _sink(arr: Arr, root: number, size: number): void{
+    const target = arr.get(root);
+    let lv, rv, left_index, right_index;
+    do{
+      left_index = this._left(root);
+      right_index = this._right(root);
+      lv = (left_index<size)?arr.get(left_index): -1;
+      rv = (right_index<size)?arr.get(right_index): -1;
+      let max_index = (lv<rv)?right_index:left_index;
+      let max_value = (lv<rv)?rv:lv;
+      arr.set(root, max_value);
+      root = max_index;
+    }while(target < lv || target < rv);
+    arr.set(root, target);
+  }
+
+  _left = (root: number):number => (root+1) * 2 -1;
+
+  _right = (root: number): number => (root+1) * 2;
 }

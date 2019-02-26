@@ -1,9 +1,9 @@
-import { BasicArr, LocalOrderArr } from "./arr";
-import { QuickSorter, InsertSorter, BubbleSorter, BinaryInsertSorter, SelectionSorter, ShellSorter } from "./sorter"
+import * as arr from "./arr";
+import * as sorters from "./sorter"
 import { ArrViewer } from "./arrviewer";
 import { MusicBox } from "./musicbox";
 (()=>{
-  let s = new ArrViewer("main", new LocalOrderArr(new BubbleSorter()));
+  let s = new ArrViewer("main", new arr.BasicArr(new sorters.QuickSorter()));
   s.show(10);
   // let a = new BasicArr(new SelectionSorter());
   // a.begin();

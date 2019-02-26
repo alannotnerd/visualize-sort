@@ -5,8 +5,8 @@ export class MusicBox {
   constructor(options:any = {}) {
 
     let defaults = {
-      type: 'sine',
-      duration: 0.2
+      type: 'square',
+      duration: 0.1
     };
 
     this.opts = Object.assign(defaults, options);
@@ -29,13 +29,9 @@ export class MusicBox {
 
     oscillator.frequency.value = freq;
 
-    gainNode.gain.setValueAtTime(0, this.audioCtx.currentTime);
-
-    gainNode.gain.linearRampToValueAtTime(1, this.audioCtx.currentTime + 0.01);
+    gainNode.gain.setValueAtTime(1, this.audioCtx.currentTime);
 
     oscillator.start(this.audioCtx.currentTime);
-
-    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + this.opts.duration);
 
     oscillator.stop(this.audioCtx.currentTime + this.opts.duration);
   }
